@@ -80,8 +80,8 @@ def main():
 
     # 出力
     export_mastodon(
-        common_calc.determine_sign(start_moon[0][0]),
-        common_calc.determine_sign(end_moon[0][0]),
+        common_calc.determine_sign(start_moon),
+        common_calc.determine_sign(end_moon),
         today_date,
         time_word,
     )
