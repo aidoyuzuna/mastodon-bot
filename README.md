@@ -1,0 +1,2 @@
+# mastodon-bot
+MastodonのBOT集
