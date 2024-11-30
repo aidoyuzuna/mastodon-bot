@@ -21,18 +21,18 @@ def convert_to_julian_date(date: datetime.date, time: datetime.time, timezone: i
     return julian_date
 
 
-def calculate_planet_position(jul_planet: tuple, planet_number: int):
-    """_summary_
+def calculate_planet_position(jul_datetime: tuple, planet_number: int):
+    """惑星の位置を計算する
 
     Args:
-        jul_planet (tuple): ユリウス暦の日付
+        jul_datetime (tuple): ユリウス暦の日付
         planet_number (int): 惑星番号
 
     Returns:
         tuple: 惑星位置の計算結果
     """
 
-    planet_calc = swe.calc(jul_planet[0], planet_number)
+    planet_calc = swe.calc(jul_datetime[0], planet_number)
     return planet_calc
 
 
