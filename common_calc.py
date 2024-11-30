@@ -3,9 +3,7 @@ import datetime
 import swisseph as swe
 
 
-def convert_to_julian_date(
-    date: datetime.date, time: datetime.time, timezone: int
-) -> float:
+def convert_to_julian_date(import_datetime: datetime.time, timezone: int) -> float:
     """日付をユリウス暦に変換する
 
     Args:
@@ -17,7 +15,13 @@ def convert_to_julian_date(
         float: ユリウス暦の日付
     """
     utc_time: tuple = swe.utc_time_zone(
-        date.year, date.month, date.day, time.hour, time.minute, time.second, timezone
+        import_datetime.year,
+        import_datetime.month,
+        import_datetime.day,
+        import_datetime.hour,
+        import_datetime.minute,
+        import_datetime.second,
+        timezone,
     )
     julian_date: tuple = swe.utc_to_jd(*utc_time)
     return julian_date[0]
