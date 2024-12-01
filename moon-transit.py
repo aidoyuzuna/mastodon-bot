@@ -1,6 +1,7 @@
 import common_calc
 import datetime
 from dotenv import load_dotenv
+import locale
 import os
 from mastodon import Mastodon
 
@@ -41,40 +42,34 @@ def create_post_message(start: str, end: str, today: datetime.date) -> str:
         str: Mastodonに投稿する内容
     """
 
-    date: str = datetime.datetime.strftime(today, "%Y年%m月%d日")
+    date: str = datetime.datetime.strftime(today, "%Y年%m月%d日（%a）%H時%M分")
     text: str = ""
 
-    if start == end and today.hour < 12:
-        text = (
-            f"{date}午前の月星座ニュースです。\n今後12時間、月星座は{start}になります。"
-        )
+    if start == end:
+        text = f"{date}の月星座ニュースです。\n当面、月星座が{start}のままになります。"
 
-    elif start == end and 12 < today.hour:
-        text = (
-            f"{date}午後の月星座ニュースです。\n今後12時間、月星座は{start}になります。"
-        )
-
-    elif start != end and today.hour < 12:
-        text = f"{date}午前の月星座ニュースです。\n今後12時間以内に月星座が{start}から{end}に変わります。"
     else:
-        text = f"{date}午後の月星座ニュースです。\n今後12時間以内に月星座が{start}から{end}に変わります。"
+        text = f"{date}の月星座ニュースです。\n今から12時間以内に、月星座が{start}から{end}に変わります。"
 
     return text
 
 
 def main():
     # 日付・タイムゾーン入力
-    today_datetime: datetime = datetime.datetime.now()
-    timezone_offset: int = 9
-
-    end_time: datetime = determine_end_time(today_datetime)
+    locale.setlocale(locale.LC_TIME, "ja_JP.UTF-8")
+    today_datetime: datetime = datetime.datetime.now(
+        datetime.timezone(datetime.timedelta(hours=9))
+    )
+    end_datetime: datetime = determine_end_time(today_datetime)
 
     # 月星座計算
     start_moon: str = common_calc.calculate_planet_position(
-        common_calc.convert_to_julian_date(today_datetime, timezone_offset), 1
+        common_calc.convert_to_julian_date(today_datetime), 1
     )
 
-    end_moon: str = common_calc.calculate_planet_position()
+    end_moon: str = common_calc.calculate_planet_position(
+        common_calc.convert_to_julian_date(end_datetime), 1
+    )
 
     # 出力
     posttext: str = create_post_message(
