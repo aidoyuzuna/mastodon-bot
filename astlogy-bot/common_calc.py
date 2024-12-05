@@ -71,4 +71,4 @@ def determine_sign(angle: float) -> str:
             f"angle は360以下の整数である必要がある: {angle}"
         )  # エラーで原因が分かるようにする
 
-    return astrology_data.zodiac_sign[idx]
+    return astrology_data.ZodiacSign(idx).sign_name

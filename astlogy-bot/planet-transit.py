@@ -60,14 +60,18 @@ def export_mastodon_text(today: float, yesterday: float) -> str:
     text: str = ""
 
     for i in range(10):
-        today_transit: float = common_calc.calculate_planet_position(today, i)
-        yesterday_transit: float = common_calc.calculate_planet_position(yesterday, i)
+        today_transit: float = common_calc.calculate_planet_position(
+            today, astrology_data.Planet(i).value
+        )
+        yesterday_transit: float = common_calc.calculate_planet_position(
+            yesterday, astrology_data.Planet(i).value
+        )
 
         # テキストの追加（逆行があるか否かで文章が変わる）
         if retrograde_planet(today_transit, yesterday_transit):
-            text += f"{astrology_data.planet[i]}（逆）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
+            text += f"{astrology_data.Planet(i).planet_name}（逆）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
         else:
-            text += f"{astrology_data.planet[i]}（巡）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
+            text += f"{astrology_data.Planet(i).planet_name}（巡）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
     return text
 
 
