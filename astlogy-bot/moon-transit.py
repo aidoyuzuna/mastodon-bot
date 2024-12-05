@@ -42,14 +42,13 @@ def create_post_message(start: str, end: str, today: datetime.date) -> str:
         str: Mastodonに投稿する内容
     """
 
-    date: str = datetime.datetime.strftime(today, "%Y年%m月%d日（%a）%H時%M分")
     text: str = ""
 
     if start == end:
-        text = f"{date}の月星座ニュースです。\n当面、月星座が{start}のままになります。"
+        text = f"{today:%Y年%m月%d日（%a）%H時%M分}の月星座ニュースです。\n当面、月星座が{start}のままになります。"
 
     else:
-        text = f"{date}の月星座ニュースです。\n今から12時間以内に、月星座が{start}から{end}に変わります。"
+        text = f"{today:%Y年%m月%d日（%a）%H時%M分}の月星座ニュースです。\n今から12時間以内に、月星座が{start}から{end}に変わります。"
 
     return text
 
