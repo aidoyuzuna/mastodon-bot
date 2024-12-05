@@ -72,11 +72,3 @@ def determine_sign(angle: float) -> str:
         )  # エラーで原因が分かるようにする
 
     return astrology_data.zodiac_sign[idx]
-
-
-# ここから下は別のプログラムで使うので今は無視でOK
-def retrograde_planet(today: float, yesterday: float):
-    if today > yesterday + 180:
-        return True
-    else:
-        return today < yesterday
