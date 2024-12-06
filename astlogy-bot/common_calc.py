@@ -36,7 +36,9 @@ def convert_to_julian_date(import_datetime: datetime.time) -> float:
     return julian_date[0]
 
 
-def calculate_planet_position(jul_datetime: float, planet_number: int) -> float:
+def calculate_planet_position(
+    jul_datetime: float, planet: astrology_data.Planet
+) -> float:
     """惑星の位置を計算する
 
     Args:
@@ -47,7 +49,7 @@ def calculate_planet_position(jul_datetime: float, planet_number: int) -> float:
         tuple: 惑星位置の計算結果
     """
 
-    planet_calc: tuple = swe.calc(jul_datetime, planet_number)
+    planet_calc: tuple = swe.calc(jul_datetime, planet)
     return planet_calc[0][0]
 
 
@@ -71,4 +73,7 @@ def determine_sign(angle: float) -> str:
             f"angle は360以下の整数である必要がある: {angle}"
         )  # エラーで原因が分かるようにする
 
-    return astrology_data.ZodiacSign(idx).sign_name
+    for sign in astrology_data.ZodiacSign:
+        if sign.index == idx:
+            return sign.sign_name
+    raise ValueError(f"{idx} is not a valid ZodiacSign index")

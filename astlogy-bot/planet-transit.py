@@ -28,7 +28,7 @@ def print_debug(msg):
 
 
 # ここから下は別のプログラムで使うので今は無視でOK
-def retrograde_planet(today: float, yesterday: float):
+def retrograde_planet(today: float, yesterday: float) -> bool:
     """今日と昨日の惑星位置を計算
 
     Args:
@@ -47,7 +47,7 @@ def retrograde_planet(today: float, yesterday: float):
         return today < yesterday
 
 
-def export_mastodon_text(today: float, yesterday: float) -> str:
+def generate_text_for_mastodon(today: float, yesterday: float) -> str:
     """Mastodonへのテキストを生成
 
     Args:
@@ -59,19 +59,19 @@ def export_mastodon_text(today: float, yesterday: float) -> str:
     """
     text: str = ""
 
-    for i in range(10):
+    for planet in astrology_data.Planet:
         today_transit: float = common_calc.calculate_planet_position(
-            today, astrology_data.Planet(i).value
+            today, astrology_data.Planet(planet).index
         )
         yesterday_transit: float = common_calc.calculate_planet_position(
-            yesterday, astrology_data.Planet(i).value
+            yesterday, astrology_data.Planet(planet).index
         )
 
         # テキストの追加（逆行があるか否かで文章が変わる）
         if retrograde_planet(today_transit, yesterday_transit):
-            text += f"{astrology_data.Planet(i).planet_name}（逆）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
+            text += f"{astrology_data.Planet(planet).planet_name}（逆）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
         else:
-            text += f"{astrology_data.Planet(i).planet_name}（巡）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
+            text += f"{astrology_data.Planet(planet).planet_name}（巡）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
     return text
 
 
@@ -86,7 +86,7 @@ def main():
     # テキストの初期化
     post_text = f"【{today_datetime:%Y年%m月%d日（%a）%H時%M分} 現在のトランジット】\n "
 
-    post_text += export_mastodon_text(
+    post_text += generate_text_for_mastodon(
         common_calc.convert_to_julian_date(today_datetime),
         common_calc.convert_to_julian_date(yesterday_datetime),
     )

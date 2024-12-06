@@ -2,12 +2,6 @@ from enum import Enum
 
 
 class ZodiacSign(Enum):
-    def __new__(cls, value, sign_name):
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj.sign_name = sign_name
-        return obj
-
     ARIES = 0, "牡羊座"
     TAURUS = 1, "牡牛座"
     GEMINI = 2, "双子座"
@@ -21,14 +15,12 @@ class ZodiacSign(Enum):
     AQUARIUS = 10, "水瓶座"
     PISCES = 11, "魚座"
 
+    def __init__(self, index: int, name: str):
+        self.index: int = index
+        self.sign_name: str = name
+
 
 class Planet(Enum):
-    def __new__(cls, value, planet_name):
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj.planet_name = planet_name
-        return obj
-
     SUN = 0, "太陽"
     MOON = 1, "月"
     MERCURY = 2, "水星"
@@ -39,3 +31,7 @@ class Planet(Enum):
     URANUS = 7, "天王星"
     NEPTUNE = 8, "海王星"
     PLUTO = 9, "冥王星"
+
+    def __init__(self, index: int, name: str):
+        self.index: int = index
+        self.planet_name: str = name
