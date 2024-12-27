@@ -19,6 +19,32 @@ class ZodiacSign(Enum):
         self.index: int = index
         self.sign_name: str = name
 
+    @property
+    def quality(self):
+        match self.index % 3:
+            case 0:
+                return Quality.CARDINAL
+            case 1:
+                return Quality.FIXED
+            case 2:
+                return Quality.MUTABLE
+            case _:
+                raise Exception("unreachable")
+
+    @property
+    def element(self):
+        match self.index % 4:
+            case 0:
+                return Element.FIRE
+            case 1:
+                return Element.EARTH
+            case 2:
+                return Element.AIR
+            case 3:
+                return Element.WATER
+            case _:
+                raise Exception("unreachable")
+
 
 class Planet(Enum):
     SUN = 0, "太陽"
@@ -46,6 +72,9 @@ class Quality(Enum):
         self.index: int = index
         self.quality_name: str = name
 
+    def __str__(self):
+        return self.quality_name
+
 
 class Element(Enum):
     FIRE = 0, "火"
@@ -56,3 +85,6 @@ class Element(Enum):
     def __init__(self, index: int, name: str):
         self.index: int = index
         self.element_name: str = name
+
+    def __str__(self):
+        return self.element_name
