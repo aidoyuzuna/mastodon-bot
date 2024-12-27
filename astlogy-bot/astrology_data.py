@@ -35,3 +35,24 @@ class Planet(Enum):
     def __init__(self, index: int, name: str):
         self.index: int = index
         self.planet_name: str = name
+
+
+class Quality(Enum):
+    CARDINAL = 0, "活動宮"
+    FIXED = 1, "不動宮"
+    MUTABLE = 2, "柔軟宮"
+
+    def __init__(self, index: int, name: str):
+        self.index: int = index
+        self.quality_name: str = name
+
+
+class Element(Enum):
+    FIRE = 0, "火"
+    EARTH = 1, "土"
+    AIR = 2, "風"
+    WATER = 3, "水"
+
+    def __init__(self, index: int, name: str):
+        self.index: int = index
+        self.element_name: str = name
