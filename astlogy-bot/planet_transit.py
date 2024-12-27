@@ -59,6 +59,15 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
     """
     text: str = ""
 
+    # 三区分・四元素のカウント初期化
+    cardinal_quality: int = 0
+    fixed_quality: int = 0
+    mutable_quality: int = 0
+    fire_element: int = 0
+    earth_element: int = 0
+    air_element: int = 0
+    water_element: int = 0
+
     for planet in astrology_data.Planet:
         today_transit: float = common_calc.calculate_planet_position(
             today, astrology_data.Planet(planet).index
@@ -67,11 +76,40 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
             yesterday, astrology_data.Planet(planet).index
         )
 
+        planet_quarity: float = common_calc.determine_quality(today_transit)
+        planet_element: float = common_calc.determine_element(today_transit)
+
+        if planet_quarity is astrology_data.Quality.CARDINAL:
+            cardinal_quality += 1
+
+        elif planet_quarity is astrology_data.Quality.FIXED:
+            fixed_quality += 1
+
+        else:
+            mutable_quality += 1
+
+        if planet_element is astrology_data.Element.FIRE:
+            fire_element += 1
+
+        elif planet_element is astrology_data.Element.EARTH:
+            earth_element += 1
+
+        elif planet_element is astrology_data.Element.AIR:
+            air_element += 1
+
+        else:
+            water_element += 1
+
         # テキストの追加（逆行があるか否かで文章が変わる）
         if retrograde_planet(today_transit, yesterday_transit):
-            text += f"{astrology_data.Planet(planet).planet_name}（逆）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
+            text += f"{astrology_data.Planet(planet).planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度（逆行）\n"
         else:
-            text += f"{astrology_data.Planet(planet).planet_name}（巡）：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
+            text += f"{astrology_data.Planet(planet).planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
+
+    # 三区分・四元素の合計追加
+    text += f"\n"
+    text += f"活動宮：{cardinal_quality} 不動宮：{fixed_quality} 柔軟宮：{mutable_quality}\n"
+    text += f"火：{fire_element} 土：{earth_element} 風：{air_element} 水：{water_element}\n"
     return text
 
 

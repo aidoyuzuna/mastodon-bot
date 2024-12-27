@@ -77,3 +77,51 @@ def determine_sign(angle: float) -> str:
         if sign.index == idx:
             return sign.sign_name
     raise ValueError(f"{idx} is not a valid ZodiacSign index")
+
+
+def determine_quality(angle: float):
+    """三区分判定
+
+    Args:
+        angle (float): 計算した惑星位置の角度
+
+    Raises:
+        ValueError: angleが360以下の整数になるか確認
+
+    Returns:
+        class : 三区分の区分
+    """
+    idx: int = int(angle // 30)
+    if idx < 0 or idx > 11:
+        raise ValueError(
+            f"angle は360以下の整数である必要がある: {angle}"
+        )  # エラーで原因が分かるようにする
+
+    for sign in astrology_data.ZodiacSign:
+        if sign.index == idx:
+            return sign.quality
+    raise ValueError(f"{idx} is not a valid Quality index")
+
+
+def determine_element(angle: float):
+    """四元素の判定
+
+    Args:
+        angle (float): 計算した惑星位置の角度
+
+    Raises:
+        ValueError: angleが360以下の整数になるか確認
+
+    Returns:
+        class : 四元素のエレメント
+    """
+    idx: int = int(angle // 30)
+    if idx < 0 or idx > 11:
+        raise ValueError(
+            f"angle は360以下の整数である必要がある: {angle}"
+        )  # エラーで原因が分かるようにする
+
+    for sign in astrology_data.ZodiacSign:
+        if sign.index == idx:
+            return sign.element
+    raise ValueError(f"{idx} is not a valid Quality index")
