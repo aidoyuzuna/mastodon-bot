@@ -100,7 +100,17 @@ def select_planet(select: int) -> str:
     raise ValueError(f"{select} is not a valid ZodiacSign index")
 
 
-def get_openai_response(sign: str, house: int, planet: str):
+def get_openai_response(sign: str, house: int, planet: str) -> str:
+    """openaiに運勢結果を出力させる
+
+    Args:
+        sign (str): ランダムで出した星座
+        house (int): ランダムで出したハウス
+        planet (str): ランダムで出した惑星
+
+    Returns:
+        str: chatGPTの出力結果
+    """
     question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を150文字で読んでください。改行は含めないでください"
     chatgpt_response_message = chatgpt.chat.completions.create(
         model="chatgpt-4o-latest",
