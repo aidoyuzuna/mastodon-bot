@@ -1,7 +1,24 @@
 import astrology_data
-import random
 import datetime
+from dotenv import load_dotenv
 import locale
+from mastodon import Mastodon
+from openai import OpenAI
+import os
+import random
+import sys
+
+# 各種APIの読み込み
+load_dotenv()
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+chatgpt = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
+
+mastodon = Mastodon(
+    client_id=os.environ.get("TODAY_ASTRO_DICE_ID"),
+    client_secret=os.environ.get("TODAY_ASTRO_DICE_SECRET"),
+    access_token=os.environ.get("TODAY_ASTRO_DICE_TOKEN"),
+    api_base_url=os.environ.get("API_URL"),
+)
 
 
 def get_current_date():
@@ -91,6 +108,27 @@ def select_planet(select: int) -> str:
     raise ValueError(f"{select} is not a valid ZodiacSign index")
 
 
+def get_openai_response(sign: str, house: int, planet: str) -> str:
+    """openaiに運勢結果を出力させる
+
+    Args:
+        sign (str): ランダムで出した星座
+        house (int): ランダムで出したハウス
+        planet (str): ランダムで出した惑星
+
+    Returns:
+        str: chatGPTの出力結果
+    """
+    question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
+    chatgpt_response_message = chatgpt.chat.completions.create(
+        model="chatgpt-4o-latest",
+        max_tokens=250,
+        temperature=0.0,
+        messages=[{"role": "user", "content": question}],
+    )
+    return chatgpt_response_message.choices[0].message.content
+
+
 def main():
     # 日付設定・ランダム生成
     locale.setlocale(locale.LC_TIME, "ja_JP.UTF-8")
@@ -100,9 +138,17 @@ def main():
     # さいころを振る
     sign_choice, house_choice, planet_choice = roll_dice()
 
+    # ChatGPTに送る
+    chatgpt_result = get_openai_response(sign_choice, house_choice, planet_choice)
+
     # 結果を表示・コピー
-    result_message = f"{today:%Y年%m月%d日（%a）}の運勢だよ！\n\nサイン：{sign_choice}\nハウス：{house_choice}\n惑星：{planet_choice}\n"
+    result_message = f"{today:%Y年%m月%d日（%a）}の運勢です。\n\n{planet_choice}・{sign_choice}・{house_choice}ハウス\n\n{chatgpt_result}"
     print(result_message)
+
+    mastodon.status_post(
+        status=result_message,
+        visibility="unlisted",
+    )
 
 
 if __name__ == "__main__":
