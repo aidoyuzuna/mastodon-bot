@@ -68,6 +68,19 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
     air_element: int = 0
     water_element: int = 0
 
+    quality = {
+        astrology_data.Quality.CARDINAL: 0,
+        astrology_data.Quality.FIXED: 0,
+        astrology_data.Quality.MUTABLE: 0,
+    }
+
+    element = {
+        astrology_data.Element.FIRE: 0,
+        astrology_data.Element.EARTH: 0,
+        astrology_data.Element.AIR: 0,
+        astrology_data.Element.WATER: 0,
+    }
+
     for planet in astrology_data.Planet:
         today_transit: float = common_calc.calculate_planet_position(
             today, astrology_data.Planet(planet).index
@@ -79,26 +92,19 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
         planet_quarity: float = common_calc.determine_quality(today_transit)
         planet_element: float = common_calc.determine_element(today_transit)
 
-        if planet_quarity is astrology_data.Quality.CARDINAL:
-            cardinal_quality += 1
+        # 要素のカウントを更新
+        quality[planet_quarity] += 1
+        element[planet_element] += 1
 
-        elif planet_quarity is astrology_data.Quality.FIXED:
-            fixed_quality += 1
+        # 各要素のカウントを変数に代入
+        cardinal_quality = quality[astrology_data.Quality.CARDINAL]
+        fixed_quality = quality[astrology_data.Quality.FIXED]
+        mutable_quality = quality[astrology_data.Quality.MUTABLE]
 
-        else:
-            mutable_quality += 1
-
-        if planet_element is astrology_data.Element.FIRE:
-            fire_element += 1
-
-        elif planet_element is astrology_data.Element.EARTH:
-            earth_element += 1
-
-        elif planet_element is astrology_data.Element.AIR:
-            air_element += 1
-
-        else:
-            water_element += 1
+        fire_element = element[astrology_data.Element.FIRE]
+        earth_element = element[astrology_data.Element.EARTH]
+        air_element = element[astrology_data.Element.AIR]
+        water_element = element[astrology_data.Element.WATER]
 
         # テキストの追加（逆行があるか否かで文章が変わる）
         if retrograde_planet(today_transit, yesterday_transit):
@@ -107,7 +113,7 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
             text += f"{astrology_data.Planet(planet).planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
 
     # 三区分・四元素の合計追加
-    text += f"\n"
+    text += "\n"
     text += f"活動宮：{cardinal_quality} 不動宮：{fixed_quality} 柔軟宮：{mutable_quality}\n"
     text += f"火：{fire_element} 土：{earth_element} 風：{air_element} 水：{water_element}\n"
     return text
