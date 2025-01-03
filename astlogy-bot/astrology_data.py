@@ -2,12 +2,6 @@ from enum import Enum
 
 
 class ZodiacSign(Enum):
-    def __new__(cls, value, sign_name):
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj.sign_name = sign_name
-        return obj
-
     ARIES = 0, "牡羊座"
     TAURUS = 1, "牡牛座"
     GEMINI = 2, "双子座"
@@ -21,14 +15,38 @@ class ZodiacSign(Enum):
     AQUARIUS = 10, "水瓶座"
     PISCES = 11, "魚座"
 
+    def __init__(self, index: int, name: str):
+        self.index: int = index
+        self.sign_name: str = name
+
+    @property
+    def quality(self):
+        match self.index % 3:
+            case 0:
+                return Quality.CARDINAL
+            case 1:
+                return Quality.FIXED
+            case 2:
+                return Quality.MUTABLE
+            case _:
+                raise Exception("unreachable")
+
+    @property
+    def element(self):
+        match self.index % 4:
+            case 0:
+                return Element.FIRE
+            case 1:
+                return Element.EARTH
+            case 2:
+                return Element.AIR
+            case 3:
+                return Element.WATER
+            case _:
+                raise Exception("unreachable")
+
 
 class Planet(Enum):
-    def __new__(cls, value, planet_name):
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj.planet_name = planet_name
-        return obj
-
     SUN = 0, "太陽"
     MOON = 1, "月"
     MERCURY = 2, "水星"
@@ -39,3 +57,34 @@ class Planet(Enum):
     URANUS = 7, "天王星"
     NEPTUNE = 8, "海王星"
     PLUTO = 9, "冥王星"
+
+    def __init__(self, index: int, name: str):
+        self.index: int = index
+        self.planet_name: str = name
+
+
+class Quality(Enum):
+    CARDINAL = 0, "活動宮"
+    FIXED = 1, "不動宮"
+    MUTABLE = 2, "柔軟宮"
+
+    def __init__(self, index: int, name: str):
+        self.index: int = index
+        self.quality_name: str = name
+
+    def __str__(self):
+        return self.quality_name
+
+
+class Element(Enum):
+    FIRE = 0, "火"
+    EARTH = 1, "土"
+    AIR = 2, "風"
+    WATER = 3, "水"
+
+    def __init__(self, index: int, name: str):
+        self.index: int = index
+        self.element_name: str = name
+
+    def __str__(self):
+        return self.element_name
