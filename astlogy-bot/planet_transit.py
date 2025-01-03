@@ -41,7 +41,6 @@ def retrograde_planet(today: float, yesterday: float) -> bool:
     if today > yesterday + 180:
         return True
     elif yesterday > today + 180:
-        print(f"elifで計算：今日{today}・昨日{yesterday}→{today + 180}")
         return False
     else:
         return today < yesterday
@@ -74,10 +73,10 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
 
     for planet in astrology_data.Planet:
         today_transit: float = common_calc.calculate_planet_position(
-            today, astrology_data.Planet(planet).index
+            today, planet.index
         )
         yesterday_transit: float = common_calc.calculate_planet_position(
-            yesterday, astrology_data.Planet(planet).index
+            yesterday, planet.index
         )
 
         planet_quarity: float = common_calc.determine_quality(today_transit)
@@ -89,9 +88,9 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
 
         # テキストの追加（逆行があるか否かで文章が変わる）
         if retrograde_planet(today_transit, yesterday_transit):
-            text += f"{astrology_data.Planet(planet).planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度（逆行）\n"
+            text += f"{planet.planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度（逆行）\n"
         else:
-            text += f"{astrology_data.Planet(planet).planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
+            text += f"{planet.planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度\n"
 
     # 三区分・四元素の合計追加
     text += "\n"
@@ -117,8 +116,8 @@ def main():
     )
 
     # 結果を出力
-    # mastodon.status_post(status=post_text, visibility="public")
     print_debug(post_text)
+    # mastodon.status_post(status=post_text, visibility="public")
 
 
 if __name__ == "__main__":
