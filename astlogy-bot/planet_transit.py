@@ -59,22 +59,13 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
     """
     text: str = ""
 
-    # 三区分・四元素のカウント初期化
-    cardinal_quality: int = 0
-    fixed_quality: int = 0
-    mutable_quality: int = 0
-    fire_element: int = 0
-    earth_element: int = 0
-    air_element: int = 0
-    water_element: int = 0
-
-    quality = {
+    quality: dict = {
         astrology_data.Quality.CARDINAL: 0,
         astrology_data.Quality.FIXED: 0,
         astrology_data.Quality.MUTABLE: 0,
     }
 
-    element = {
+    element: dict = {
         astrology_data.Element.FIRE: 0,
         astrology_data.Element.EARTH: 0,
         astrology_data.Element.AIR: 0,
@@ -104,8 +95,8 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> str:
 
     # 三区分・四元素の合計追加
     text += "\n"
-    text += f"活動宮：{quality[astrology_data.Quality.CARDINAL]} 不動宮：{quality[astrology_data.Quality.FIXED]} 柔軟宮：{quality[astrology_data.Quality.MUTABLE]}\n"
-    text += f"火：{element[astrology_data.Element.FIRE]} 土：{element[astrology_data.Element.EARTH]} 風：{element[astrology_data.Element.AIR]} 水：{element[astrology_data.Element.WATER]}\n"
+    text += f"活動宮：{quality[astrology_data.Quality.CARDINAL]}　不動宮：{quality[astrology_data.Quality.FIXED]}　柔軟宮：{quality[astrology_data.Quality.MUTABLE]}\n"
+    text += f"火：{element[astrology_data.Element.FIRE]}　土：{element[astrology_data.Element.EARTH]}　風：{element[astrology_data.Element.AIR]}　水：{element[astrology_data.Element.WATER]}\n"
     return text
 
 
