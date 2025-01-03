@@ -119,7 +119,7 @@ def get_openai_response(sign: str, house: int, planet: str) -> str:
     Returns:
         str: chatGPTの出力結果
     """
-    question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行は含めないでください"
+    question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
     chatgpt_response_message = chatgpt.chat.completions.create(
         model="chatgpt-4o-latest",
         max_tokens=250,
@@ -142,7 +142,7 @@ def main():
     chatgpt_result = get_openai_response(sign_choice, house_choice, planet_choice)
 
     # 結果を表示・コピー
-    result_message = f"{today:%Y年%m月%d日（%a）}の運勢です。\n\nサイン：{sign_choice}\nハウス：{house_choice}\n惑星：{planet_choice}\n\n{chatgpt_result}"
+    result_message = f"{today:%Y年%m月%d日（%a）}の運勢です。\n\n{planet_choice}・{sign_choice}・{house_choice}ハウス\n\n{chatgpt_result}"
     print(result_message)
 
     mastodon.status_post(
