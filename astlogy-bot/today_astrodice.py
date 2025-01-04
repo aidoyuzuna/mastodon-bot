@@ -38,7 +38,7 @@ def generate_seed(current_date: datetime):
     Args:
         current_date (datetime): 取得した今日の日付
     """
-    seed_num: int = int(current_date.month) * 32 * int(current_date.day)
+    seed_num = current_date.year * 32 * 13 + current_date.month * 32 + current_date.day
     random.seed(seed_num)
 
 
@@ -82,7 +82,7 @@ def select_sign(select: int) -> str:
     for sign in astrology_data.ZodiacSign:
         if sign.index == select:
             return sign.sign_name
-    raise ValueError(f"{select} is not a valid ZodiacSign index")
+    raise ValueError(f"{select} is not a valid Planet index")
 
 
 def select_planet(select: int) -> str:
@@ -142,13 +142,13 @@ def main():
     chatgpt_result = get_openai_response(sign_choice, house_choice, planet_choice)
 
     # 結果を表示・コピー
-    result_message = f"{today:%Y年%m月%d日（%a）}の運勢です。\n\n{planet_choice}・{sign_choice}・{house_choice}ハウス\n\n{chatgpt_result}"
+    result_message = f"【{today:%Y年%m月%d日（%a）}の運勢】\n{planet_choice}・{sign_choice}・{house_choice}ハウス\n\n{chatgpt_result}"
     print(result_message)
 
-    mastodon.status_post(
-        status=result_message,
-        visibility="unlisted",
-    )
+    # mastodon.status_post(
+    #    status=result_message,
+    #    visibility="unlisted",
+    # )
 
 
 if __name__ == "__main__":
