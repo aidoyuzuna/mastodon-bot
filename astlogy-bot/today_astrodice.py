@@ -3,7 +3,7 @@ import datetime
 from dotenv import load_dotenv
 import locale
 from mastodon import Mastodon, MastodonUnauthorizedError
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 import os
 import random
 import sys
@@ -56,8 +56,7 @@ def initialize_openai() -> Optional[OpenAI]:
         Optional[OpenAI]: Open AI APIの環境変数
     """
     if not all([os.environ.get("OPENAI_KEY")]):
-        print("ChatGPTの必要な環境変数が設定されていません")
-        return None
+        raise KeyError("OpenAi APIの必要な環境変数が設定されていません")
 
     return OpenAI(api_key=os.environ.get("OPENAI_KEY"))
 
@@ -148,12 +147,15 @@ def get_openai_response(sign: str, house: int, planet: str, openai_key: OpenAI) 
         str: chatGPTの出力結果
     """
     question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
-    chatgpt_response_message = openai_key.chat.completions.create(
-        model="chatgpt-4o-latest",
-        max_tokens=150,
-        temperature=0.0,
-        messages=[{"role": "user", "content": question}],
-    )
+    try:
+        chatgpt_response_message = openai_key.chat.completions.create(
+            model="chatgpt-4o-latest",
+            max_tokens=150,
+            temperature=0.0,
+            messages=[{"role": "user", "content": question}],
+        )
+    except OpenAIError as e:
+        raise OpenAIError("OpenAI APIのAPI残高をチェックしてください。") from e
     return chatgpt_response_message.choices[0].message.content
 
 
