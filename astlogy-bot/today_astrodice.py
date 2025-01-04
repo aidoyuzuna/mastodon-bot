@@ -32,7 +32,7 @@ def get_current_date():
     return date
 
 
-def generate_seed(current_date: datetime):
+def set_seed_by_date(current_date: datetime):
     """日付を元にシードを設定する
 
     Args:
@@ -50,9 +50,9 @@ def roll_dice():
         house_roll (int): ハウスのさいころ結果
         planet_roll (str): 惑星のさいころ結果
     """
-    sign_roll: str = select_sign(random.randint(0, 11))
+    sign_roll: str = identify_sign(random.randint(0, 11))
     house_roll: int = random.randint(1, 12)
-    planet_roll: str = select_planet(random.randint(0, 9))
+    planet_roll: str = identify_planet(random.randint(0, 9))
 
     return (
         sign_roll,
@@ -61,51 +61,51 @@ def roll_dice():
     )
 
 
-def select_sign(select: int) -> str:
-    """ランダムの数値からサインを判定
+def identify_sign(planet_idx: int) -> str:
+    """与えられたインデックスに対応するサインを特定する
 
     Args:
-        select (int): ランダムの数値
+        planet_idx (int): ランダムの数値
 
     Raises:
-        ValueError: selectが11以下の整数か確認
-        ValueError: selectの数値が星座番号と一致していないか確認
+        ValueError: sign_idxが11以下の整数か確認
+        ValueError: sign_idxの数値が星座番号と一致していないか確認
 
     Returns:
         str: 星座の名前
     """
-    if select < 0 or select > 11:
+    if planet_idx < 0 or planet_idx > 11:
         raise ValueError(
-            f"select は11以下の整数である必要がある: {select}"
+            f"planet_idx は11以下の整数である必要がある: {planet_idx}"
         )  # エラーで原因が分かるようにする
 
     for sign in astrology_data.ZodiacSign:
-        if sign.index == select:
+        if sign.index == planet_idx:
             return sign.sign_name
-    raise ValueError(f"{select} is not a valid Planet index")
+    raise ValueError(f"{planet_idx} is not a valid Planet index")
 
 
-def select_planet(select: int) -> str:
-    """ランダムの数値から惑星を判定
+def identify_planet(planet_idx: int) -> str:
+    """与えられたインデックスに対応する惑星を特定する
 
     Args:
-        select (int): ランダムの数値
+        planet_idx (int): ランダムの数値
     Raises:
-        ValueError: selectが9以下の整数か確認
-        ValueError: selectの数値が星座番号と一致していないか確認
+        ValueError: planet_idxが9以下の整数か確認
+        ValueError: planet_idxの数値が星座番号と一致していないか確認
 
     Returns:
         str: 惑星の名前
     """
-    if select < 0 or select > 9:
+    if planet_idx < 0 or planet_idx > 9:
         raise ValueError(
-            f"select は9以下の整数である必要がある: {select}"
+            f"planet_idx は9以下の整数である必要がある: {planet_idx}"
         )  # エラーで原因が分かるようにする
 
     for sign in astrology_data.Planet:
-        if sign.index == select:
+        if sign.index == planet_idx:
             return sign.planet_name
-    raise ValueError(f"{select} is not a valid ZodiacSign index")
+    raise ValueError(f"{planet_idx} is not a valid ZodiacSign index")
 
 
 def get_openai_response(sign: str, house: int, planet: str) -> str:
@@ -133,7 +133,7 @@ def main():
     # 日付設定・ランダム生成
     locale.setlocale(locale.LC_TIME, "ja_JP.UTF-8")
     today = get_current_date()
-    generate_seed(today)
+    set_seed_by_date(today)
 
     # さいころを振る
     sign_choice, house_choice, planet_choice = roll_dice()
