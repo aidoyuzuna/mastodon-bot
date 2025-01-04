@@ -99,15 +99,11 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> list[str]:
         quality[planet_quarity] += 1
         element[planet_element] += 1
 
-        # テキストの追加（逆行があるか否かで文章が変わる）
-        if retrograde_planet(today_transit, yesterday_transit):
-            text.append(
-                f"{planet.planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度（逆行）"
-            )
-        else:
-            text.append(
-                f"{planet.planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度"
-            )
+        is_retro = retrograde_planet(today_transit, yesterday_transit)
+        ret_text = "（逆行）" if is_retro else ""
+        text.append(
+            f"{planet.planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度{ret_text}"
+        )
 
     # 三区分・四元素の合計追加
     text.append(
