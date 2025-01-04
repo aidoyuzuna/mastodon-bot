@@ -5,8 +5,30 @@ from dotenv import load_dotenv
 import locale
 import os
 from mastodon import Mastodon
+from typing import Optional
+
 
 # アカウント設定
+def initialize_mastodon() -> Optional[Mastodon]:
+    if not all(
+        [
+            os.environ.get("PLANET_ID"),
+            os.environ.get("PLANET_SECRET"),
+            os.environ.get("PLANET_TOKEN"),
+            os.environ.get("API_URL"),
+        ]
+    ):
+        print("必要な環境変数が設定されていません")
+        return None
+
+    return Mastodon(
+        client_id=os.environ["PLANET_ID"],
+        client_secret=os.environ["PLANET_SECRET"],
+        access_token=os.environ["PLANET_TOKEN"],
+        api_base_url=os.environ["API_URL"],
+    )
+
+
 load_dotenv()
 mastodon = Mastodon(
     client_id=os.environ.get("PLANET_ID"),
@@ -21,7 +43,7 @@ def print_debug(msg):
     """気になる変数をprint
 
     Args:
-        msg (_type_):デバッグしたい変数
+        msg (Any):デバッグしたい変数
     """
     print(msg)
     print(type(msg))
@@ -46,7 +68,7 @@ def retrograde_planet(today: float, yesterday: float) -> bool:
         return today < yesterday
 
 
-def generate_text_for_mastodon(today: float, yesterday: float) -> list:
+def generate_text_for_mastodon(today: float, yesterday: float) -> list[str]:
     """Mastodonへのテキストを生成
 
     Args:
