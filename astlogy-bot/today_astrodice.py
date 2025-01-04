@@ -2,7 +2,7 @@ import astrology_data
 import datetime
 from dotenv import load_dotenv
 import locale
-from mastodon import Mastodon
+from mastodon import Mastodon, MastodonUnauthorizedError
 from openai import OpenAI
 import os
 import random
@@ -11,11 +11,16 @@ from typing import Optional
 
 
 def initialize_mastodon() -> Optional[Mastodon]:
-    """Mastodonのenv読み込み判定
+    """Mastodon APIクライアントを初期化し、認証を行います。
 
     Returns:
-        Optional[Mastodon]: Mastodonの環境変数
+        Optional[Mastodon]: 認証済みのMastodon APIクライアントオブジェクト。
+
+    Raises:
+        KeyError: 必要な環境変数が設定されていない場合
+        MastodonUnauthorizedError: アクセストークンが無効または読み込み権限がない
     """
+
     if not all(
         [
             os.environ.get("TODAY_ASTRO_DICE_ID"),
@@ -24,15 +29,24 @@ def initialize_mastodon() -> Optional[Mastodon]:
             os.environ.get("API_URL"),
         ]
     ):
-        print("Mastodonの必要な環境変数が設定されていません")
-        return None
+        raise KeyError("Mastodonの必要な環境変数が設定されていません")
 
-    return Mastodon(
+    mastodon_api = Mastodon(
         client_id=os.environ["TODAY_ASTRO_DICE_ID"],
         client_secret=os.environ["TODAY_ASTRO_DICE_SECRET"],
         access_token=os.environ["TODAY_ASTRO_DICE_TOKEN"],
         api_base_url=os.environ["API_URL"],
     )
+
+    # 認証チェック
+    try:
+        mastodon_api.me()
+    except MastodonUnauthorizedError as e:
+        raise MastodonUnauthorizedError(
+            "認証エラー: アクセストークンが無効・もしくは読み込み権限がありません。"
+        ) from e
+
+    return mastodon_api
 
 
 def initialize_openai() -> Optional[OpenAI]:
@@ -91,9 +105,7 @@ def identify_sign(planet_idx: int) -> str:
         str: 星座の名前
     """
     if planet_idx < 0 or planet_idx > 11:
-        raise ValueError(
-            f"planet_idx は11以下の整数である必要がある: {planet_idx}"
-        )  # エラーで原因が分かるようにする
+        raise ValueError(f"planet_idx は11以下の整数である必要がある: {planet_idx}")
 
     for sign in astrology_data.ZodiacSign:
         if sign.index == planet_idx:
@@ -135,18 +147,14 @@ def get_openai_response(sign: str, house: int, planet: str, openai_key: OpenAI) 
     Returns:
         str: chatGPTの出力結果
     """
-    try:
-        question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
-        chatgpt_response_message = openai_key.chat.completions.create(
-            model="chatgpt-4o-latest",
-            max_tokens=150,
-            temperature=0.0,
-            messages=[{"role": "user", "content": question}],
-        )
-        return chatgpt_response_message.choices[0].message.content
-    except Exception as e:
-        print(f"OpenAI APIエラー: {e}")
-        return "申し訳ありません。運勢の取得に失敗しました。"
+    question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
+    chatgpt_response_message = openai_key.chat.completions.create(
+        model="chatgpt-4o-latest",
+        max_tokens=150,
+        temperature=0.0,
+        messages=[{"role": "user", "content": question}],
+    )
+    return chatgpt_response_message.choices[0].message.content
 
 
 def main():
