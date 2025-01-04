@@ -7,29 +7,45 @@ from openai import OpenAI
 import os
 import random
 import sys
-
-# 各種APIの読み込み
-load_dotenv()
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-chatgpt = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
-
-mastodon = Mastodon(
-    client_id=os.environ.get("TODAY_ASTRO_DICE_ID"),
-    client_secret=os.environ.get("TODAY_ASTRO_DICE_SECRET"),
-    access_token=os.environ.get("TODAY_ASTRO_DICE_TOKEN"),
-    api_base_url=os.environ.get("API_URL"),
-)
+from typing import Optional
 
 
-def get_current_date():
-    """日付を取得する
+def initialize_mastodon() -> Optional[Mastodon]:
+    """Mastodonのenv読み込み判定
 
     Returns:
-        date: datetimeで取得した日付
+        Optional[Mastodon]: Mastodonの環境変数
     """
+    if not all(
+        [
+            os.environ.get("TODAY_ASTRO_DICE_ID"),
+            os.environ.get("TODAY_ASTRO_DICE_SECRET"),
+            os.environ.get("TODAY_ASTRO_DICE_TOKEN"),
+            os.environ.get("API_URL"),
+        ]
+    ):
+        print("Mastodonの必要な環境変数が設定されていません")
+        return None
 
-    date = datetime.date.today()
-    return date
+    return Mastodon(
+        client_id=os.environ["TODAY_ASTRO_DICE_ID"],
+        client_secret=os.environ["TODAY_ASTRO_DICE_SECRET"],
+        access_token=os.environ["TODAY_ASTRO_DICE_TOKEN"],
+        api_base_url=os.environ["API_URL"],
+    )
+
+
+def initialize_openai() -> Optional[OpenAI]:
+    """OpenAI APIのenv読み込み判定
+
+    Returns:
+        Optional[OpenAI]: Open AI APIの環境変数
+    """
+    if not all([os.environ.get("OPENAI_KEY")]):
+        print("ChatGPTの必要な環境変数が設定されていません")
+        return None
+
+    return OpenAI(api_key=os.environ.get("OPENAI_KEY"))
 
 
 def set_seed_by_date(current_date: datetime):
@@ -105,10 +121,10 @@ def identify_planet(planet_idx: int) -> str:
     for sign in astrology_data.Planet:
         if sign.index == planet_idx:
             return sign.planet_name
-    raise ValueError(f"{planet_idx} is not a valid ZodiacSign index")
+    raise ValueError(f"{planet_idx} is not a valid Planet index")
 
 
-def get_openai_response(sign: str, house: int, planet: str) -> str:
+def get_openai_response(sign: str, house: int, planet: str, openai_key: OpenAI) -> str:
     """openaiに運勢結果を出力させる
 
     Args:
@@ -119,36 +135,49 @@ def get_openai_response(sign: str, house: int, planet: str) -> str:
     Returns:
         str: chatGPTの出力結果
     """
-    question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
-    chatgpt_response_message = chatgpt.chat.completions.create(
-        model="chatgpt-4o-latest",
-        max_tokens=250,
-        temperature=0.0,
-        messages=[{"role": "user", "content": question}],
-    )
-    return chatgpt_response_message.choices[0].message.content
+    try:
+        question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
+        chatgpt_response_message = openai_key.chat.completions.create(
+            model="chatgpt-4o-latest",
+            max_tokens=150,
+            temperature=0.0,
+            messages=[{"role": "user", "content": question}],
+        )
+        return chatgpt_response_message.choices[0].message.content
+    except Exception as e:
+        print(f"OpenAI APIエラー: {e}")
+        return "申し訳ありません。運勢の取得に失敗しました。"
 
 
 def main():
+    # 各種APIの読み込み
+    load_dotenv()
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+    mastodon = initialize_mastodon()
+    openai = initialize_openai()
+
     # 日付設定・ランダム生成
     locale.setlocale(locale.LC_TIME, "ja_JP.UTF-8")
-    today = get_current_date()
+    today = datetime.date.today()
     set_seed_by_date(today)
 
     # さいころを振る
     sign_choice, house_choice, planet_choice = roll_dice()
 
     # ChatGPTに送る
-    chatgpt_result = get_openai_response(sign_choice, house_choice, planet_choice)
+    chatgpt_result = get_openai_response(
+        sign_choice, house_choice, planet_choice, openai
+    )
 
     # 結果を表示・コピー
     result_message = f"【{today:%Y年%m月%d日（%a）}の運勢】\n{planet_choice}・{sign_choice}・{house_choice}ハウス\n\n{chatgpt_result}"
     print(result_message)
 
-    # mastodon.status_post(
-    #    status=result_message,
-    #    visibility="unlisted",
-    # )
+    mastodon.status_post(
+        status=result_message,
+        visibility="unlisted",
+    )
 
 
 if __name__ == "__main__":
