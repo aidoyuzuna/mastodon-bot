@@ -18,7 +18,7 @@ def initialize_mastodon() -> Optional[Mastodon]:
             os.environ.get("API_URL"),
         ]
     ):
-        print("必要な環境変数が設定されていません")
+        print("Mastodonに必要な環境変数が設定されていません")
         return None
 
     return Mastodon(
@@ -27,15 +27,6 @@ def initialize_mastodon() -> Optional[Mastodon]:
         access_token=os.environ["PLANET_TOKEN"],
         api_base_url=os.environ["API_URL"],
     )
-
-
-load_dotenv()
-mastodon = Mastodon(
-    client_id=os.environ.get("PLANET_ID"),
-    client_secret=os.environ.get("PLANET_SECRET"),
-    access_token=os.environ.get("PLANET_TOKEN"),
-    api_base_url=os.environ.get("API_URL"),
-)
 
 
 # プリントデバッグ
@@ -129,6 +120,9 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> list[str]:
 
 
 def main():
+    # 設定ファイル読み込み
+    load_dotenv()
+
     # 日付とタイムゾーン指定
     locale.setlocale(locale.LC_TIME, "ja_JP.UTF-8")
     today_datetime: datetime = datetime.datetime.now(
