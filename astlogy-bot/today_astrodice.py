@@ -11,6 +11,11 @@ from typing import Optional
 
 
 def initialize_mastodon() -> Optional[Mastodon]:
+    """Mastodonのenv読み込み判定
+
+    Returns:
+        Optional[Mastodon]: Mastodonの環境変数
+    """
     if not all(
         [
             os.environ.get("TODAY_ASTRO_DICE_ID"),
@@ -30,7 +35,12 @@ def initialize_mastodon() -> Optional[Mastodon]:
     )
 
 
-def initialize_openai() -> Optional[Mastodon]:
+def initialize_openai() -> Optional[OpenAI]:
+    """OpenAI APIのenv読み込み判定
+
+    Returns:
+        Optional[OpenAI]: Open AI APIの環境変数
+    """
     if not all([os.environ.get("OPENAI_KEY")]):
         print("ChatGPTの必要な環境変数が設定されていません")
         return None
@@ -111,7 +121,7 @@ def identify_planet(planet_idx: int) -> str:
     for sign in astrology_data.Planet:
         if sign.index == planet_idx:
             return sign.planet_name
-    raise ValueError(f"{planet_idx} is not a valid ZodiacSign index")
+    raise ValueError(f"{planet_idx} is not a valid Planet index")
 
 
 def get_openai_response(sign: str, house: int, planet: str, openai_key: OpenAI) -> str:
@@ -125,14 +135,18 @@ def get_openai_response(sign: str, house: int, planet: str, openai_key: OpenAI) 
     Returns:
         str: chatGPTの出力結果
     """
-    question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
-    chatgpt_response_message = openai_key.chat.completions.create(
-        model="chatgpt-4o-latest",
-        max_tokens=250,
-        temperature=0.0,
-        messages=[{"role": "user", "content": question}],
-    )
-    return chatgpt_response_message.choices[0].message.content
+    try:
+        question = f"アストロダイスを振った結果「{planet}・{house}ハウス・{sign}」になりました。結果を基に今日の運勢を120文字で読んでください。改行とハウス・サイン・惑星は出力しないこと。"
+        chatgpt_response_message = openai_key.chat.completions.create(
+            model="chatgpt-4o-latest",
+            max_tokens=150,
+            temperature=0.0,
+            messages=[{"role": "user", "content": question}],
+        )
+        return chatgpt_response_message.choices[0].message.content
+    except Exception as e:
+        print(f"OpenAI APIエラー: {e}")
+        return "申し訳ありません。運勢の取得に失敗しました。"
 
 
 def main():
