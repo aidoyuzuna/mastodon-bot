@@ -1,0 +1,30 @@
+name: AI Review α
+
+on:
+  pull_request:
+    types: [review_requested]
+
+jobs:
+  request_ai_review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ github.event.requested_reviewer.login == 'aidoyuzuna' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: POST Dify API
+        env:
+          API_URL: "https://api.dify.ai/v1/workflows/run"
+          API_KEY: ${{ secrets.DIFY_KEY }}
+        run: |
+          response=$(curl -s -X POST "$API_URL" \
+            -H "Authorization: Bearer $API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "inputs": { "url": "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" },
+              "response_mode": "blocking",
+              "user": "aidoyuzuna"
+            }')
+
+          echo "Response: $response"
