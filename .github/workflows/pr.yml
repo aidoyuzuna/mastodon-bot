@@ -1,9 +1,9 @@
 name: AI Review α
 
 on:
-  push:
+  pull_request:
     branches:
-      - develop
+      - main
     paths:
       - '*.py'
       - '!*.md'
@@ -14,7 +14,6 @@ jobs:
   request_ai_review:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: ${{ github.event.requested_reviewer.login == 'aidoyuzuna' }}
 
     steps:
       - uses: actions/checkout@v4
