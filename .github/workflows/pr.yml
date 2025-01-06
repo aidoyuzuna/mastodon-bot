@@ -10,28 +10,12 @@ on:
       - '!*.md'
 
 jobs:
-  review:
+  request_ai_review:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions:
-      contents: read-write
-      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get PR diff
-        id: pr-diff
-        run: |
-          PR_DIFF=$(curl -s \
-            -H "Authorization: token ${{ secrets.ACTION_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3.diff" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}")
-          echo "PR_DIFF<<EOF" >> $GITHUB_ENV
-          echo "$PR_DIFF" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
 
       - name: POST Dify API
         env:
@@ -42,20 +26,9 @@ jobs:
             -H "Authorization: Bearer $API_KEY" \
             -H "Content-Type: application/json" \
             -d '{
-              "inputs": {
-                "pr_url": "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}",
-                "pr_diff": "'"${PR_DIFF}"'",
-                "pr_title": "${{ github.event.pull_request.title }}",
-                "pr_body": "${{ github.event.pull_request.body }}"
-              },
+              "inputs": { "url": "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" },
               "response_mode": "blocking",
-              "user": "aidoyuzuna"
+              "user": "xxxxxx"
             }')
 
-          # レスポンスをPRにコメントとして追加
-          comment_body=$(echo $response | jq -r '.results.review_comment')
-          curl -s -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
-            -d "{\"body\":\"$comment_body\"}"
+          echo "Response: $response"
