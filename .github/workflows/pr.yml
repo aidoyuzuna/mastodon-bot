@@ -1,8 +1,14 @@
 name: AI Review α
 
 on:
-  pull_request:
-    types: [review_requested]
+  push:
+    branches:
+      - develop
+    paths:
+      - '*.py'
+      - '!*.md'
+      - 'astrology-bot/*py'
+      - '!*.md'
 
 jobs:
   request_ai_review:
