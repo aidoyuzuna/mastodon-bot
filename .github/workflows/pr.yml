@@ -14,13 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      contents: read
+      contents: read-write
       pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 全履歴を取得
+          fetch-depth: 0
 
       - name: Get PR diff
         id: pr-diff
