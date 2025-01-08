@@ -4,15 +4,28 @@ from dotenv import load_dotenv
 import locale
 import os
 from mastodon import Mastodon
+import sys
+from typing import Optional
+
 
 # 各種APIの読み込み
-load_dotenv()
-mastodon = Mastodon(
-    client_id=os.environ.get("MOON_ID"),
-    client_secret=os.environ.get("MOON_SECRET"),
-    access_token=os.environ.get("MOON_TOKEN"),
-    api_base_url=os.environ.get("API_URL"),
-)
+def initialize_mastodon() -> Optional[Mastodon]:
+    if not all(
+        [
+            os.environ.get("MOON_ID"),
+            os.environ.get("MOON_SECRET"),
+            os.environ.get("MOON_TOKEN"),
+            os.environ.get("API_URL"),
+        ]
+    ):
+        raise KeyError("Mastodonの必要な環境変数が設定されていません")
+
+    return Mastodon(
+        client_id=os.environ.get("MOON_ID"),
+        client_secret=os.environ.get("MOON_SECRET"),
+        access_token=os.environ.get("MOON_TOKEN"),
+        api_base_url=os.environ.get("API_URL"),
+    )
 
 
 def determine_end_time(now: datetime.time) -> datetime:
@@ -54,6 +67,11 @@ def create_post_message(start: str, end: str, today: datetime.date) -> str:
 
 
 def main():
+    # 読み込み
+    load_dotenv()
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    mastodon = initialize_mastodon()
+
     # 日付・タイムゾーン入力
     locale.setlocale(locale.LC_TIME, "ja_JP.UTF-8")
     today_datetime: datetime = datetime.datetime.now(
@@ -79,10 +97,10 @@ def main():
 
     print(posttext)
 
-    # mastodon.status_post(
-    #    status=posttext,
-    #    visibility="public",
-    # )
+    mastodon.status_post(
+        status=posttext,
+        visibility="public",
+    )
 
 
 if __name__ == "__main__":
