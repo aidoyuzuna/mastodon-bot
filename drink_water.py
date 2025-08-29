@@ -5,6 +5,12 @@ from mastodon import Mastodon
 
 
 def toot(mastodon_api: Mastodon, time: datetime):
+    """MastodonにPostを行う
+
+    Args:
+        mastodon_api (Mastodon): MastodonのAPIデータ
+        time (datetime): 現在の時刻（投稿に使用）
+    """
     toot_text = f"{time :%H時%M分}だよ！お水飲んで！ぐびー :ablobcat_drinkwater:"
     print(toot_text)
     mastodon_api.status_post(status=toot_text, visibility="public")

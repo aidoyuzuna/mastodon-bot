@@ -4,7 +4,7 @@ import common_calc
 from dotenv import load_dotenv
 import locale
 import os
-from mastodon import Mastodon
+from mastodon import Mastodon, MastodonUnauthorizedError
 from typing import Optional
 
 
@@ -18,8 +18,7 @@ def initialize_mastodon() -> Optional[Mastodon]:
             os.environ.get("API_URL"),
         ]
     ):
-        print("Mastodonに必要な環境変数が設定されていません")
-        return None
+        raise KeyError("Mastodonの必要な環境変数が設定されていません")
 
     return Mastodon(
         client_id=os.environ["PLANET_ID"],
@@ -27,6 +26,15 @@ def initialize_mastodon() -> Optional[Mastodon]:
         access_token=os.environ["PLANET_TOKEN"],
         api_base_url=os.environ["API_URL"],
     )
+    # 認証チェック
+    try:
+        mastodon_api.me()
+    except MastodonUnauthorizedError as e:
+        raise MastodonUnauthorizedError(
+            "認証エラー: アクセストークンが無効・もしくは読み込み権限がありません。"
+        ) from e
+
+    return mastodon_api
 
 
 # プリントデバッグ
@@ -104,11 +112,13 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> list[str]:
         text.append(
             f"{planet.planet_name}：{common_calc.determine_sign(today_transit)}{int(today_transit % 30)}度{ret_text}"
         )
+        text.append("\n")
 
     # 三区分・四元素の合計追加
     text.append(
         f"\n活動宮：{quality[astrology_data.Quality.CARDINAL]}　不動宮：{quality[astrology_data.Quality.FIXED]}　柔軟宮：{quality[astrology_data.Quality.MUTABLE]}"
     )
+    text.append("\n")
     text.append(
         f"火：{element[astrology_data.Element.FIRE]}　土：{element[astrology_data.Element.EARTH]}　風：{element[astrology_data.Element.AIR]}　水：{element[astrology_data.Element.WATER]}\n"
     )
@@ -118,6 +128,7 @@ def generate_text_for_mastodon(today: float, yesterday: float) -> list[str]:
 def main():
     # 設定ファイル読み込み
     load_dotenv()
+    mastodon = initialize_mastodon()
 
     # 日付とタイムゾーン指定
     locale.setlocale(locale.LC_TIME, "ja_JP.UTF-8")
@@ -136,11 +147,14 @@ def main():
         common_calc.convert_to_julian_date(yesterday_datetime),
     )
 
-    post_text = [print(i) for i in result_text]
+    post_text = ""
+
+    for i in result_text:
+        post_text += i
 
     # 結果を出力
     print_debug(post_text)
-    # mastodon.status_post(status=post_text, visibility="public")
+    mastodon.status_post(status=post_text, visibility="public")
 
 
 if __name__ == "__main__":
