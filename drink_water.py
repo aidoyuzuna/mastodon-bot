@@ -4,12 +4,12 @@ import os
 from mastodon import Mastodon
 
 
-def toot(mastodon_api: Mastodon, time: datetime):
+def post_water_reminder(mastodon_api: Mastodon, time: datetime.time):
     """MastodonにPostを行う
 
     Args:
         mastodon_api (Mastodon): MastodonのAPIデータ
-        time (datetime): 現在の時刻（投稿に使用）
+        time (datetime.time): 現在の時刻（投稿に使用）
     """
     toot_text = f"{time :%H時%M分}だよ！お水飲んで！ぐびー :ablobcat_drinkwater:"
     print(toot_text)
@@ -27,7 +27,7 @@ def main():
     )
 
     now = datetime.datetime.now().time()
-    toot(mastodon, now)
+    post_water_reminder(mastodon, now)
 
 
 if __name__ == "__main__":
