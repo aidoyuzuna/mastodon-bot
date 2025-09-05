@@ -7,13 +7,13 @@ from typing import Optional
 
 def initialize_mastodon() -> Mastodon:
     """Mastodon APIを初期化する
-    
+
     環境変数から認証情報を読み取り、Mastodonインスタンスを作成。
     認証チェックも実行する。
-    
+
     Returns:
         Mastodon: 認証済みのMastodonインスタンス
-        
+
     Raises:
         KeyError: 必要な環境変数が設定されていない場合
         MastodonUnauthorizedError: 認証に失敗した場合
@@ -55,7 +55,12 @@ def create_water_reminder_message(time: datetime.time) -> str:
     Returns:
         str: 投稿用メッセージ
     """
-    return f"{time :%H時%M分}だよ！お水飲んで！ぐびー :ablobcat_drinkwater:"
+
+    # 時刻の有効性をチェック
+    if 0 <= time.hour <= 23 and 0 <= time.minute <= 59:
+        return f"{time:%H時%M分}だよ！お水飲んで！ぐびー :ablobcat_drinkwater:"
+    else:
+        raise ValueError(f"無効な時刻です: {time.hour}時{time.minute}分")
 
 
 def post_water_reminder_at_time(
